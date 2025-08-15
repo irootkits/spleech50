@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chat Old Gen</title>
+<title>pin ta mams</title>
 <style>
   body {
-    background-color: #0b3d91; /* bleu foncé */
+    background-color: #0b3d91;
     color: white;
     font-family: monospace;
     margin: 0;
@@ -48,10 +48,11 @@
     border-radius: 4px;
   }
 </style>
+
 <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -65,24 +66,26 @@
 </div>
 
 <div id="chat" style="display:none;">
-  <h2>Chat Global</h2>
+  <h2>chatt</h2>
   <div id="messages"></div>
   <input id="messageInput" placeholder="Écrire un message"/>
   <button id="send">Envoyer</button>
 </div>
 
 <script>
-  // Config Firebase (remplace par la tienne)
+  // TA CONFIG FIREBASE (uniquement ça, pas la doc !)
   const firebaseConfig = {
-    apiKey: "TA_API_KEY",
-    authDomain: "TON_PROJET.firebaseapp.com",
-    projectId: "TON_PROJET",
-    storageBucket: "TON_PROJET.appspot.com",
-    messagingSenderId: "TON_ID",
-    appId: "TON_APP_ID"
+    apiKey: "AIzaSyBpQfaPdFa9y68ZKMD0OjJFDYb8n0UU_wk",
+    authDomain: "ikillhismom.firebaseapp.com",
+    projectId: "ikillhismom",
+    storageBucket: "ikillhismom.firebasestorage.app",
+    messagingSenderId: "385432951279",
+    appId: "1:385432951279:web:e25960d53255f126fcfe1a",
+    measurementId: "G-K4H70YYHMN"
   };
 
-  const app = firebase.initializeApp(firebaseConfig);
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
 
@@ -91,7 +94,6 @@
     const email = document.getElementById("email").value;
     const pass = document.getElementById("password").value;
     const displayName = document.getElementById("displayName").value;
-
     if(!displayName) { alert("Choisis un display name !"); return; }
 
     auth.createUserWithEmailAndPassword(email, pass)
@@ -101,7 +103,7 @@
         document.getElementById("chat").style.display = "block";
         loadMessages();
       })
-      .catch(console.error);
+      .catch(error => alert(error.message));
   };
 
   // Login
@@ -115,7 +117,7 @@
         document.getElementById("chat").style.display = "block";
         loadMessages();
       })
-      .catch(console.error);
+      .catch(error => alert(error.message));
   };
 
   // Envoyer message
@@ -158,5 +160,3 @@
 
 </body>
 </html>
-
-
