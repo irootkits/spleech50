@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat Old Gen</title>
+<style>
+  body {
+    background-color: #0b3d91; /* bleu foncé */
+    color: white;
+    font-family: monospace;
+    margin: 0;
+    padding: 0;
+  }
+  #auth, #chat {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: rgba(0,0,0,0.3);
+    border-radius: 8px;
+  }
+  input {
+    width: 100%;
+    margin: 5px 0;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+  }
+  button {
+    padding: 10px;
+    background-color: #1a5fb4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 5px;
+  }
+  button:hover {
+    background-color: #0a3d80;
+  }
+  #messages {
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin-bottom: 10px;
+    background-color: rgba(255,255,255,0.1);
+    border-radius: 4px;
+  }
+</style>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+</head>
+<body>
+
+<div id="auth">
+  <h2>Login / Signup</h2>
+  <input id="email" placeholder="Email" type="email"/>
+  <input id="password" placeholder="Password" type="password"/>
+  <input id="displayName" placeholder="Display Name" type="text"/>
+  <button id="signup">Signup</button>
+  <button id="login">Login</button>
+</div>
+
+<div id="chat" style="display:none;">
+  <h2>Chat Global</h2>
+  <div id="messages"></div>
+  <input id="messageInput" placeholder="Écrire un message"/>
+  <button id="send">Envoyer</button>
+</div>
+
+<script>
+  // Config Firebase (remplace par la tienne)
+  const firebaseConfig = {
+    apiKey: "TA_API_KEY",
+    authDomain: "TON_PROJET.firebaseapp.com",
+    projectId: "TON_PROJET",
+    storageBucket: "TON_PROJET.appspot.com",
+    messagingSenderId: "TON_ID",
+    appId: "TON_APP_ID"
+  };
+
+  const app = firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  // Signup
+  document.getElementById("signup").onclick = () => {
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
+    const displayName = document.getElementById("displayName").value;
+
+    if(!displayName) { alert("Choisis un display name !"); return; }
+
+    auth.createUserWithEmailAndPassword(email, pass)
+      .then(userCredential => userCredential.user.updateProfile({ displayName }))
+      .then(() => {
+        document.getElementById("auth").style.display = "none";
+        document.getElementById("chat").style.display = "block";
+        loadMessages();
+      })
+      .catch(console.error);
+  };
+
+  // Login
+  document.getElementById("login").onclick = () => {
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
+
+    auth.signInWithEmailAndPassword(email, pass)
+      .then(() => {
+        document.getElementById("auth").style.display = "none";
+        document.getElementById("chat").style.display = "block";
+        loadMessages();
+      })
+      .catch(console.error);
+  };
+
+  // Envoyer message
+  document.getElementById("send").onclick = () => {
+    const message = document.getElementById("messageInput").value;
+    const user = auth.currentUser;
+    if(!user || !message) return;
+
+    db.collection("messages").add({
+      displayName: user.displayName,
+      message: message,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById("messageInput").value = "";
+  };
+
+  // Charger messages
+  function loadMessages() {
+    db.collection("messages").orderBy("timestamp")
+      .onSnapshot(snapshot => {
+        const messagesDiv = document.getElementById("messages");
+        messagesDiv.innerHTML = "";
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          messagesDiv.innerHTML += `<p><strong>${data.displayName}:</strong> ${data.message}</p>`;
+        });
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      });
+  }
+
+  // Garder l'utilisateur connecté
+  auth.onAuthStateChanged(user => {
+    if(user) {
+      document.getElementById("auth").style.display = "none";
+      document.getElementById("chat").style.display = "block";
+      loadMessages();
+    }
+  });
+</script>
+
+</body>
+</html>
+
+
