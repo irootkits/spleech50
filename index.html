@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>pin ta mams</title>
+<title>violations sur ta communes</title>
 <style>
   body {
-    background-color: #0b3d91;
+    background-color: #0b3d91; /* bleu foncé */
     color: white;
     font-family: monospace;
     margin: 0;
@@ -50,9 +50,9 @@
 </style>
 
 <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
 </head>
 <body>
 
@@ -65,15 +65,15 @@
   <button id="login">Login</button>
 </div>
 
-<div id="chat" style="display:none;">
-  <h2>chatt</h2>
+<div id="chat2zgeg" style="display:none;">
+  <h2>Chat Global</h2>
   <div id="messages"></div>
   <input id="messageInput" placeholder="Écrire un message"/>
   <button id="send">Envoyer</button>
 </div>
 
 <script>
-  // TA CONFIG FIREBASE (uniquement ça, pas la doc !)
+  // Config Firebase : remplace avec les tiens
   const firebaseConfig = {
     apiKey: "AIzaSyBpQfaPdFa9y68ZKMD0OjJFDYb8n0UU_wk",
     authDomain: "ikillhismom.firebaseapp.com",
@@ -84,16 +84,31 @@
     measurementId: "G-K4H70YYHMN"
   };
 
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
+  const app = firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
+
+  // Charger les messages dès le début
+  function loadMessages() {
+    db.collection("messages").orderBy("timestamp")
+      .onSnapshot(snapshot => {
+        const messagesDiv = document.getElementById("messages");
+        messagesDiv.innerHTML = "";
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          messagesDiv.innerHTML += `<p><strong>${data.displayName || "Anonyme"}:</strong> ${data.message}</p>`;
+        });
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      });
+  }
+  loadMessages();
 
   // Signup
   document.getElementById("signup").onclick = () => {
     const email = document.getElementById("email").value;
     const pass = document.getElementById("password").value;
     const displayName = document.getElementById("displayName").value;
+
     if(!displayName) { alert("Choisis un display name !"); return; }
 
     auth.createUserWithEmailAndPassword(email, pass)
@@ -101,9 +116,8 @@
       .then(() => {
         document.getElementById("auth").style.display = "none";
         document.getElementById("chat").style.display = "block";
-        loadMessages();
       })
-      .catch(error => alert(error.message));
+      .catch(console.error);
   };
 
   // Login
@@ -115,48 +129,33 @@
       .then(() => {
         document.getElementById("auth").style.display = "none";
         document.getElementById("chat").style.display = "block";
-        loadMessages();
       })
-      .catch(error => alert(error.message));
+      .catch(console.error);
   };
 
   // Envoyer message
   document.getElementById("send").onclick = () => {
     const message = document.getElementById("messageInput").value;
     const user = auth.currentUser;
-    if(!user || !message) return;
+    if(!message) return;
 
     db.collection("messages").add({
-      displayName: user.displayName,
+      displayName: user ? user.displayName : "Anonyme",
       message: message,
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
     document.getElementById("messageInput").value = "";
   };
 
-  // Charger messages
-  function loadMessages() {
-    db.collection("messages").orderBy("timestamp")
-      .onSnapshot(snapshot => {
-        const messagesDiv = document.getElementById("messages");
-        messagesDiv.innerHTML = "";
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          messagesDiv.innerHTML += `<p><strong>${data.displayName}:</strong> ${data.message}</p>`;
-        });
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      });
-  }
-
   // Garder l'utilisateur connecté
   auth.onAuthStateChanged(user => {
     if(user) {
       document.getElementById("auth").style.display = "none";
       document.getElementById("chat").style.display = "block";
-      loadMessages();
     }
   });
 </script>
 
 </body>
 </html>
+
